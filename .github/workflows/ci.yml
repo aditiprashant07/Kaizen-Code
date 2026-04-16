@@ -15,27 +15,20 @@ jobs:
     name: Lint JS (ESLint)
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: extension
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4   # ✅ updated
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4  # ✅ updated
         with:
           node-version: 18
-          cache: 'npm'
-          cache-dependency-path: extension/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run ESLint
+      - name: Run ESLint (only if files exist)
         run: |
           if [ -d "extension" ] && [ "$(ls -A extension 2>/dev/null)" ]; then
+            cd extension
+            npm install
             npx eslint .
           else
             echo "No JS files found, skipping ESLint"
@@ -48,62 +41,47 @@ jobs:
     name: Lint Python (Pylint)
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: api
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4   # ✅ updated
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5   # ✅ FIXED + updated
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pylint
-
-      - name: Run Pylint
+      - name: Run Pylint (only if files exist)
         run: |
           if [ -d "api" ] && [ "$(ls -A api 2>/dev/null)" ]; then
+            cd api
+            pip install pylint
             pylint .
           else
             echo "No Python files found, skipping Pylint"
           fi
 
   # -----------------------------
-  # 🔹 Python Tests (Optional but recommended)
+  # 🔹 Python Tests
   # -----------------------------
   test-python:
     name: Run Python Tests
     runs-on: ubuntu-latest
-    needs: lint-python   # ensures lint passes first
-
-    defaults:
-      run:
-        working-directory: api
+    needs: lint-python
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest
-
-      - name: Run Tests
+      - name: Run Tests (only if present)
         run: |
           if [ -d "api" ] && [ "$(ls -A api 2>/dev/null)" ]; then
+            cd api
+            pip install pytest
             pytest
           else
             echo "No tests found, skipping"
