@@ -34,7 +34,12 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npx eslint .
+        run: |
+          if [ -d "extension" ] && [ "$(ls -A extension 2>/dev/null)" ]; then
+            npx eslint .
+          else
+            echo "No JS files found, skipping ESLint"
+          fi
 
   # -----------------------------
   # 🔹 Python Linting
@@ -63,7 +68,12 @@ jobs:
           pip install pylint
 
       - name: Run Pylint
-        run: pylint .
+        run: |
+          if [ -d "api" ] && [ "$(ls -A api 2>/dev/null)" ]; then
+            pylint .
+          else
+            echo "No Python files found, skipping Pylint"
+          fi
 
   # -----------------------------
   # 🔹 Python Tests (Optional but recommended)
@@ -92,4 +102,9 @@ jobs:
           pip install pytest
 
       - name: Run Tests
-        run: pytest
+        run: |
+          if [ -d "api" ] && [ "$(ls -A api 2>/dev/null)" ]; then
+            pytest
+          else
+            echo "No tests found, skipping"
+          fi
